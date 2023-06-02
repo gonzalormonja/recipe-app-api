@@ -19,10 +19,10 @@
     "vscode": {
       "extensions": [
         "aaron-bond.better-comments",
+        "ms-python.python",
         "ms-python.black-formatter",
         "ms-python.flake8",
         "ms-python.vscode-pylance",
-        "ms-python.python",
         "streetsidesoftware.code-spell-checker",
         "sonarsource.sonarlint-vscode",
         "redhat.vscode-yaml"

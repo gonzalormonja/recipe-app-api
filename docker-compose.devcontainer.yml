@@ -6,9 +6,7 @@ services:
       file: ./docker-compose.yml
       service: app
     command: >
-      sh -c "python manage.py wait_for_db &&
-      python manage.py migrate &&
-      tail -f /dev/null"
+      sh -c "python manage.py wait_for_db && python manage.py migrate && tail -f /dev/null"
 
   db:
     extends:
@@ -17,3 +15,4 @@ services:
 
 volumes:
   dev-db-data:
+  dev-static-data:
