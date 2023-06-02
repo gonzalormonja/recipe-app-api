@@ -59,6 +59,11 @@ def create_ingredient(user, name="ingredientName"):
     return Ingredient.objects.create(user=user, name=name)
 
 
+def create_tag(user, name="tagName"):
+    """Create and return a tag"""
+    return Tag.objects.create(user=user, name=name)
+
+
 class PublicRecipeAPITests(TestCase):
     """Test unauthenticated API requests."""
 
@@ -400,6 +405,52 @@ class PrivateRecipeAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(recipe.ingredients.count(), 0)
 
+    def test_filter_by_tag(self):
+        """Test filtering recipes by tags."""
+        r1 = create_recipe(user=self.user, title="r1")
+        r2 = create_recipe(user=self.user, title="r2")
+        tag1 = create_tag(user=self.user, name="tag1")
+        tag2 = create_tag(user=self.user, name="tag2")
+        r1.tags.add(tag1)
+        r2.tags.add(tag2)
+
+        r3 = create_recipe(user=self.user, title="r3")
+
+        params = {"tags": f"{tag1.id},{tag2.id}"}
+        res = self.client.get(RECIPE_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filter_by_ingredients(self):
+        """Test filtering recipes by ingredients."""
+        r1 = create_recipe(user=self.user, title="r1")
+        r2 = create_recipe(user=self.user, title="r2")
+        ing1 = create_ingredient(user=self.user, name="ing1")
+        ing2 = create_ingredient(user=self.user, name="ing2")
+        r1.ingredients.add(ing1)
+        r2.ingredients.add(ing2)
+
+        r3 = create_recipe(user=self.user, title="r3")
+
+        params = {"ingredients": f"{ing1.id},{ing2.id}"}
+        res = self.client.get(RECIPE_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
 
 class ImageUploadTests(TestCase):
     """Test for the image upload API."""
@@ -421,10 +472,8 @@ class ImageUploadTests(TestCase):
             img.save(image_file, format="JPEG")
             image_file.seek(0)
             payload = {"image": image_file}
-            print(image_file)
             res = self.client.post(url, payload, format="multipart")
 
-        print(res.data)
         self.recipe.refresh_from_db()
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn("image", res.data)
