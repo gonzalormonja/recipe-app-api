@@ -451,6 +451,24 @@ class PrivateRecipeAPITests(TestCase):
         self.assertIn(s2.data, res.data)
         self.assertNotIn(s3.data, res.data)
 
+    def test_filter_by_time_minutes(self):
+        """Test filtering recipes by time_minutes"""
+        r30 = create_recipe(user=self.user, time_minutes=30)
+        r45 = create_recipe(user=self.user, time_minutes=45)
+        r60 = create_recipe(user=self.user, time_minutes=60)
+
+        params = {"time_minutes": 50}
+        res = self.client.get(RECIPE_URL, params, format="json")
+
+        s30 = RecipeSerializer(r30)
+        s45 = RecipeSerializer(r45)
+        s60 = RecipeSerializer(r60)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(s30.data, res.data)
+        self.assertIn(s45.data, res.data)
+        self.assertNotIn(s60.data, res.data)
+
 
 class ImageUploadTests(TestCase):
     """Test for the image upload API."""

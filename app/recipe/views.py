@@ -52,6 +52,9 @@ class BaseRecipeAttrViewSet(
                 OpenApiTypes.STR,
                 description="Comma separated list of ingredient IDs to filter",
             ),
+            OpenApiParameter(
+                "time_minutes", OpenApiTypes.INT, description="Integer value to filter"
+            ),
         ]
     )
 )
@@ -71,6 +74,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Retrieve recipes for authenticated user."""
         tags = self.request.query_params.get("tags")
         ingredients = self.request.query_params.get("ingredients")
+        time_minutes = self.request.query_params.get("time_minutes")
         queryset = self.queryset
         if tags:
             tag_ids = self._params_to_ints(tags)
@@ -78,6 +82,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if ingredients:
             ingredient_ids = self._params_to_ints(ingredients)
             queryset = queryset.filter(ingredients__id__in=ingredient_ids)
+        if time_minutes:
+            queryset = queryset.filter(time_minutes__lte=time_minutes)
 
         return queryset.filter(user=self.request.user).order_by("-id").distinct()
 
